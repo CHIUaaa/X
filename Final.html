@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Card Placement Game</title>
+   <style>
+ body {
+  background: url('background.gif') no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+ 
+    h1, h2 {
+      color: #fff;
+      text-shadow: 2px 2px 4px #000;
+    }
+    .row {
+      display: flex;
+      justify-content: center;
+      padding: 10px;
+    }
+    .card {
+      width: 100px;
+      height: 150px;
+      border: 1px solid black;
+      text-align: center;
+      line-height: 150px;
+      font-size: 80px;
+      cursor: pointer;
+      background-color: rgba(255, 255, 255, 0.8);
+      margin: 5px;
+      box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+      transition: 0.3s;
+    }
+    .card:hover {
+      box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #4CAF50; /* Green */
+      border: none;
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      transition-duration: 0.4s;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+ <script>
+function showResults() {
+  var rate = (playerWins * 0.6).toFixed(1); // 将rate四舍五入到小数点后1位
+  var reward = (rate * betAmount).toFixed(2); // 将reward四舍五入到小数点后2位
+  alert("Game over! \nYour rate: " + rate + "\nYour bet amount: " + betAmount + "\nYour reward: " + reward);
+}
+var deck = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+var dealerCards = [];
+var playerCards = [[], [], []];
+var round = 0;
+var playerWins = 0;
+var betAmount = 0;
+var dealerCardChanged = false;
+
+function startGame() {
+  betAmount = parseInt(prompt("Please enter your bet amount", "請投注( $ _ $ )"));
+
+  if (isNaN(betAmount)) {
+    alert("Invalid bet amount. Game will not start.");
+    return;
+  }
+
+  dealerCards = [];
+  playerCards = [[], [], []];
+  round = 0;
+  playerWins = 0;
+
+  for (var i = 1; i <= 3; i++) {
+    dealerCards.push(deck[Math.floor(Math.random() * deck.length)]);
+  }
+
+  for (var j = 1; j <= 12; j++) {
+    var cardRow = Math.floor((j - 1) / 4);
+    playerCards[cardRow].push(deck[Math.floor(Math.random() * deck.length)]);
+    var card = document.getElementById("playerCard" + j);
+    card.innerText = "🂠";
+    card.setAttribute("onclick", "selectPlayerCard(" + j + ")");
+  }
+
+  // 将庄家的牌变为“🂠”
+  for (var i = 1; i <= 3; i++) {
+    var dealerCard = document.getElementById('dealerCard' + i);
+    dealerCard.innerText = "🂠";
+    dealerCard.setAttribute("onclick", "revealDealerCard()");
+  }
+
+  document.getElementById("changeDealerCardButton").removeAttribute("disabled");
+  dealerCardChanged = false;
+}
+
+function revealDealerCard() {
+  var dealerCard = document.getElementById("dealerCard" + (round + 1));
+  var dealerCardValue = dealerCards[round];
+  dealerCard.innerText = dealerCardValue;
+}
+
+function changeDealerCard() {
+  if (dealerCardChanged) {
+    return;
+  }
+
+  betAmount += betAmount * 0.1;
+  dealerCards[round] = deck[Math.floor(Math.random() * deck.length)];
+  revealDealerCard();
+
+  dealerCardChanged = true;
+  document.getElementById("changeDealerCardButton").setAttribute("disabled", "true");
+}
+
+function selectPlayerCard(index) {
+  var cardRow = Math.floor((index - 1) / 4);
+  var card = document.getElementById("playerCard" + index);
+  var cardValue = playerCards[cardRow][index - cardRow * 4 - 1];
+
+  if (cardRow !== round) {
+    return;
+  }
+
+  for (var i = 1; i <= 4; i++) {
+    document.getElementById("playerCard" + (cardRow * 4 + i)).removeAttribute("onclick");
+  }
+
+  card.innerText = cardValue;
+  var dealerCardValue = dealerCards[round];
+  if (dealerCardValue <= 4) {
+    if (cardValue < dealerCardValue) {
+      playerWins++;
+    }
+  } else {
+    if (cardValue > dealerCardValue) {
+      playerWins++;
+    }
+  }
+
+  round++;
+
+  if (round >= 3) {
+    setTimeout(showResults, 100);
+    return;
+  }
+
+  document.getElementById("changeDealerCardButton").removeAttribute("disabled");
+  dealerCardChanged = false;
+}
+
+function showResults() {
+  var rate = playerWins * 0.6;
+  var reward = rate * betAmount;
+  alert("Game over! \nYour rate: " + rate + "\nYour bet amount: " + betAmount + "\nYour reward: " + reward);
+}
+</script>
+</head>
+<body onload="startGame()">
+    <h1>Card Placement Game</h1>
+    <h2>Dealer Card Area</h2>
+    <div class="row">
+        <div class="card" id="dealerCard1" onclick="revealDealerCard()">🂠</div>
+        <div class="card" id="dealerCard2" onclick="revealDealerCard()">🂠</div>
+        <div class="card" id="dealerCard3" onclick="revealDealerCard()">🂠</div>
+    </div>
+    <h2>Player Card Area</h2>
+    <div class="row">
+        <div class="card" id="playerCard1">🂠</div>
+        <div class="card" id="playerCard2">🂠</div>
+        <div class="card" id="playerCard3">🂠</div>
+        <div class="card" id="playerCard4">🂠</div>
+    </div>
+    <div class="row">
+        <div class="card" id="playerCard5">🂠</div>
+        <div class="card" id="playerCard6">🂠</div>
+        <div class="card" id="playerCard7">🂠</div>
+        <div class="card" id="playerCard8">🂠</div>
+    </div>
+    <div class="row">
+        <div class="card" id="playerCard9">🂠</div>
+        <div class="card" id="playerCard10">🂠</div>
+        <div class="card" id="playerCard11">🂠</div>
+        <div class="card" id="playerCard12">🂠</div>
+    </div>
+
+    <h2>Game Controls</h2>
+    <button onclick="startGame()">New Game</button>
+    <button id="changeDealerCardButton" onclick="changeDealerCard()" disabled>Change Dealer Card</button>
+</body>
+</html>
